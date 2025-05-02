@@ -1,8 +1,9 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import random
-import winsound  # Para el sonido en Windows
+import winsound
 from datetime import datetime
+#hola profesora este es un comentario para ver si si jala
 
 # Diccionario de probabilidades base
 base_probabilidades = {
