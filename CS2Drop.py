@@ -1,6 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 import random
+import winsound  # Para el sonido en Windows
+from datetime import datetime
 
 # Diccionario de probabilidades base
 base_probabilidades = {
@@ -46,6 +48,8 @@ otras_cajas = [
 
 caja_imagenes = {f"cs{i}": f"cs{i}.png" for i in range(1, 35)}
 
+# Variables globales para el historial
+historial = []
 
 def ajustar_probabilidades(puntos):
     if puntos < 4000:
@@ -99,7 +103,13 @@ def elegir_caja(probabilidades):
 def evaluar_item_extra(puntos):
     prob = (puntos / 4000) * 2.0
     prob = min(prob, 100.0)
-    return "Sí" if random.uniform(0, 100) < prob else "No"
+    resultado = random.uniform(0, 100) < prob
+    if resultado:
+        try:
+            winsound.Beep(1000, 300)  # Sonido al ganar item extra
+        except:
+            pass
+    return "Sí" if resultado else "No"
 
 
 def cargar_imagen_de_caja(caja_nombre):
@@ -113,6 +123,23 @@ def cargar_imagen_de_caja(caja_nombre):
             except:
                 pass
     return None
+
+
+def mostrar_historial():
+    top = tk.Toplevel()
+    top.title("Historial de Sorteos")
+    top.geometry("400x300")
+    
+    scrollbar = tk.Scrollbar(top)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    
+    historial_text = tk.Text(top, yscrollcommand=scrollbar.set)
+    historial_text.pack(fill=tk.BOTH, expand=True)
+    
+    for item in reversed(historial):
+        historial_text.insert(tk.END, f"{item}\n\n")
+    
+    scrollbar.config(command=historial_text.yview)
 
 
 def ejecutar_sorteo():
@@ -132,6 +159,10 @@ def ejecutar_sorteo():
         else:
             label_imagen.config(image="", text="Sin imagen")
 
+        # Agregar al historial
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        historial.append(f"{timestamp}\nPuntos: {puntos}\nCaja: {caja}\nItem Extra: {item_extra}")
+
     except ValueError:
         resultado_caja.set("Error: Ingresa un número válido")
         resultado_extra.set("")
@@ -142,20 +173,31 @@ def ejecutar_sorteo():
 ventana = tk.Tk()
 ventana.title("Sorteo de Caja CS2")
 
-tk.Label(ventana, text="Ingresa tus puntos:").pack()
-entry_puntos = tk.Entry(ventana)
+# Frame principal para mejor organización
+main_frame = tk.Frame(ventana)
+main_frame.pack(padx=10, pady=10)
+
+# Entrada de puntos
+tk.Label(main_frame, text="Ingresa tus puntos:").pack()
+entry_puntos = tk.Entry(main_frame)
 entry_puntos.pack()
 
-tk.Button(ventana, text="Sortear", command=ejecutar_sorteo).pack(pady=10)
+# Botones
+button_frame = tk.Frame(main_frame)
+button_frame.pack(pady=10)
 
+tk.Button(button_frame, text="Sortear", command=ejecutar_sorteo).pack(side=tk.LEFT, padx=5)
+tk.Button(button_frame, text="Ver Historial", command=mostrar_historial).pack(side=tk.LEFT, padx=5)
+
+# Resultados
 resultado_caja = tk.StringVar()
 resultado_extra = tk.StringVar()
 
-tk.Label(ventana, textvariable=resultado_caja, font=("Arial", 12)).pack(pady=5)
-tk.Label(ventana, textvariable=resultado_extra,
-         font=("Arial", 12)).pack(pady=5)
+tk.Label(main_frame, textvariable=resultado_caja, font=("Arial", 12)).pack(pady=5)
+tk.Label(main_frame, textvariable=resultado_extra, font=("Arial", 12)).pack(pady=5)
 
-label_imagen = tk.Label(ventana)
+# Imagen
+label_imagen = tk.Label(main_frame)
 label_imagen.pack(pady=10)
 
 ventana.mainloop()
