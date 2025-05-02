@@ -1,9 +1,16 @@
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 import random
 import winsound
 from datetime import datetime
-#hola profesora este es un comentario para ver si si jala
+
+# Configuración de estilo
+BG_COLOR = "#2c3e50"
+FG_COLOR = "#ecf0f1"
+BUTTON_COLOR = "#3498db"
+HOVER_COLOR = "#2980b9"
+FONT = ("Arial", 10)
 
 # Diccionario de probabilidades base
 base_probabilidades = {
@@ -71,10 +78,7 @@ def ajustar_probabilidades(puntos):
         if suma_total <= 100:
             break
 
-        # Encontrar el valor más alto y su clave
         mayor_key, mayor_valor = max(nuevas_prob.items(), key=lambda x: x[1])
-
-        # Suma de los otros
         suma_otros = suma_total - mayor_valor
         espacio_disponible = 100 - suma_otros
 
@@ -84,7 +88,6 @@ def ajustar_probabilidades(puntos):
             nuevas_prob[mayor_key] = espacio_disponible
 
     return nuevas_prob
-
 
 def elegir_caja(probabilidades):
     items = []
@@ -100,7 +103,6 @@ def elegir_caja(probabilidades):
 
     return random.choices(items, weights=pesos, k=1)[0]
 
-
 def evaluar_item_extra(puntos):
     prob = (puntos / 4000) * 2.0
     prob = min(prob, 100.0)
@@ -112,93 +114,202 @@ def evaluar_item_extra(puntos):
             pass
     return "Sí" if resultado else "No"
 
-
 def cargar_imagen_de_caja(caja_nombre):
     if "(" in caja_nombre and ")" in caja_nombre:
         codigo = caja_nombre.split("(")[-1].strip(")")
         if codigo in caja_imagenes:
             ruta = caja_imagenes[codigo]
             try:
-                img = Image.open(ruta).resize((150, 150))
+                img = Image.open(ruta).resize((200, 200))
                 return ImageTk.PhotoImage(img)
             except:
                 pass
     return None
 
-
 def mostrar_historial():
     top = tk.Toplevel()
     top.title("Historial de Sorteos")
-    top.geometry("400x300")
+    top.geometry("500x400")
+    top.configure(bg=BG_COLOR)
     
-    scrollbar = tk.Scrollbar(top)
+    # Frame para el historial
+    hist_frame = tk.Frame(top, bg=BG_COLOR)
+    hist_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+    
+    # Scrollbar
+    scrollbar = ttk.Scrollbar(hist_frame)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     
-    historial_text = tk.Text(top, yscrollcommand=scrollbar.set)
+    # Texto del historial con estilo
+    historial_text = tk.Text(
+        hist_frame, 
+        yscrollcommand=scrollbar.set,
+        bg="#34495e",
+        fg=FG_COLOR,
+        font=FONT,
+        padx=10,
+        pady=10,
+        wrap=tk.WORD
+    )
     historial_text.pack(fill=tk.BOTH, expand=True)
     
-    for item in reversed(historial):
-        historial_text.insert(tk.END, f"{item}\n\n")
+    # Insertar historial
+    if not historial:
+        historial_text.insert(tk.END, "No hay registros en el historial")
+    else:
+        for item in reversed(historial):
+            historial_text.insert(tk.END, f"{item}\n{'='*50}\n")
     
     scrollbar.config(command=historial_text.yview)
-
+    
+    # Botón para cerrar
+    close_btn = ttk.Button(
+        top, 
+        text="Cerrar", 
+        command=top.destroy,
+        style="TButton"
+    )
+    close_btn.pack(pady=5)
 
 def ejecutar_sorteo():
     try:
         puntos = int(entry_puntos.get())
+        if puntos <= 0:
+            raise ValueError
+        
         prob_actuales = ajustar_probabilidades(puntos)
         caja = elegir_caja(prob_actuales)
         item_extra = evaluar_item_extra(puntos)
 
-        resultado_caja.set(f"Caja: {caja}")
+        resultado_caja.set(f"Caja obtenida: {caja}")
         resultado_extra.set(f"Item Extra: {item_extra}")
+        
+        # Cambiar color según si hay item extra
+        label_extra.config(fg="#2ecc71" if item_extra == "Sí" else "#e74c3c")
 
         imagen = cargar_imagen_de_caja(caja)
         if imagen:
             label_imagen.config(image=imagen)
-            label_imagen.image = imagen  # evitar recolección de basura
+            label_imagen.image = imagen
         else:
-            label_imagen.config(image="", text="Sin imagen")
+            label_imagen.config(image="", text="Imagen no disponible")
 
         # Agregar al historial
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        historial.append(f"{timestamp}\nPuntos: {puntos}\nCaja: {caja}\nItem Extra: {item_extra}")
+        historial.append(f"{timestamp}\nPuntos usados: {puntos}\nCaja: {caja}\nItem Extra: {item_extra}")
 
     except ValueError:
-        resultado_caja.set("Error: Ingresa un número válido")
+        resultado_caja.set("Error: Ingresa un número válido (mayor que 0)")
         resultado_extra.set("")
         label_imagen.config(image="", text="Error")
 
-
-# GUI
+# Configuración de la ventana principal
 ventana = tk.Tk()
-ventana.title("Sorteo de Caja CS2")
+ventana.title("CS2 Case Simulator")
+ventana.geometry("500x600")
+ventana.configure(bg=BG_COLOR)
+ventana.resizable(False, False)
 
-# Frame principal para mejor organización
-main_frame = tk.Frame(ventana)
-main_frame.pack(padx=10, pady=10)
+# Estilo para los botones
+style = ttk.Style()
+style.configure("TButton", 
+                font=FONT,
+                background=BUTTON_COLOR,
+                foreground=FG_COLOR)
+style.map("TButton",
+          background=[('active', HOVER_COLOR)])
 
-# Entrada de puntos
-tk.Label(main_frame, text="Ingresa tus puntos:").pack()
-entry_puntos = tk.Entry(main_frame)
-entry_puntos.pack()
+# Frame principal
+main_frame = tk.Frame(ventana, bg=BG_COLOR, padx=20, pady=20)
+main_frame.pack(fill=tk.BOTH, expand=True)
 
-# Botones
-button_frame = tk.Frame(main_frame)
-button_frame.pack(pady=10)
+# Título
+title_label = tk.Label(
+    main_frame,
+    text="CS2 Case Simulator",
+    font=("Arial", 18, "bold"),
+    bg=BG_COLOR,
+    fg=FG_COLOR
+)
+title_label.pack(pady=(0, 20))
 
-tk.Button(button_frame, text="Sortear", command=ejecutar_sorteo).pack(side=tk.LEFT, padx=5)
-tk.Button(button_frame, text="Ver Historial", command=mostrar_historial).pack(side=tk.LEFT, padx=5)
+# Frame de entrada
+input_frame = tk.Frame(main_frame, bg=BG_COLOR)
+input_frame.pack(fill=tk.X, pady=10)
 
-# Resultados
+tk.Label(
+    input_frame,
+    text="Puntos disponibles:",
+    font=FONT,
+    bg=BG_COLOR,
+    fg=FG_COLOR
+).pack(side=tk.LEFT)
+
+entry_puntos = ttk.Entry(input_frame, font=FONT, width=10)
+entry_puntos.pack(side=tk.LEFT, padx=10)
+
+# Frame de botones
+button_frame = tk.Frame(main_frame, bg=BG_COLOR)
+button_frame.pack(pady=15)
+
+ttk.Button(
+    button_frame,
+    text="Realizar Sorteo",
+    command=ejecutar_sorteo,
+    style="TButton"
+).pack(side=tk.LEFT, padx=5)
+
+ttk.Button(
+    button_frame,
+    text="Ver Historial",
+    command=mostrar_historial,
+    style="TButton"
+).pack(side=tk.LEFT, padx=5)
+
+# Frame de resultados
+result_frame = tk.Frame(main_frame, bg=BG_COLOR)
+result_frame.pack(fill=tk.X, pady=10)
+
 resultado_caja = tk.StringVar()
 resultado_extra = tk.StringVar()
 
-tk.Label(main_frame, textvariable=resultado_caja, font=("Arial", 12)).pack(pady=5)
-tk.Label(main_frame, textvariable=resultado_extra, font=("Arial", 12)).pack(pady=5)
+label_caja = tk.Label(
+    result_frame,
+    textvariable=resultado_caja,
+    font=("Arial", 12, "bold"),
+    bg=BG_COLOR,
+    fg="#f39c12",
+    wraplength=400
+)
+label_caja.pack()
 
-# Imagen
-label_imagen = tk.Label(main_frame)
-label_imagen.pack(pady=10)
+label_extra = tk.Label(
+    result_frame,
+    textvariable=resultado_extra,
+    font=("Arial", 12, "bold"),
+    bg=BG_COLOR,
+    wraplength=400
+)
+label_extra.pack(pady=5)
+
+# Imagen de la caja
+label_imagen = tk.Label(
+    main_frame,
+    bg=BG_COLOR,
+    fg=FG_COLOR,
+    text="Esperando sorteo...",
+    font=FONT
+)
+label_imagen.pack(pady=20)
+
+# Footer
+footer_label = tk.Label(
+    main_frame,
+    text="Simulador de cajas CS2 © 2023",
+    font=("Arial", 8),
+    bg=BG_COLOR,
+    fg="#7f8c8d"
+)
+footer_label.pack(side=tk.BOTTOM, pady=(20, 0))
 
 ventana.mainloop()
