@@ -305,7 +305,7 @@ label_imagen.pack(pady=20)
 # Footer
 footer_label = tk.Label(
     main_frame,
-    text="Simulador de cajas CS2 © 2023",
+    text="Holaaaaa",
     font=("Arial", 8),
     bg=BG_COLOR,
     fg="#7f8c8d"
