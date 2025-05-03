@@ -10,7 +10,7 @@ BG_COLOR = "#2c3e50"
 FG_COLOR = "#ecf0f1"
 BUTTON_COLOR = "#3498db"
 HOVER_COLOR = "#2980b9"
-FONT = ("Arial", 10)
+FONT = ("Times New Roman", 10)
 
 # Diccionario de probabilidades base
 base_probabilidades = {
@@ -144,9 +144,9 @@ def mostrar_historial():
     historial_text = tk.Text(
         hist_frame, 
         yscrollcommand=scrollbar.set,
-        bg="#34495e",
-        fg=FG_COLOR,
-        font=FONT,
+        bg="#2c3e50",
+        fg="#ecf0f1",
+        font=("Segoe UI", 10),
         padx=10,
         pady=10,
         wrap=tk.WORD
@@ -167,9 +167,16 @@ def mostrar_historial():
         top, 
         text="Cerrar", 
         command=top.destroy,
-        style="TButton"
+        style="Cerrar.TButton"
     )
     close_btn.pack(pady=5)
+
+    style = ttk.Style()
+    style.configure("Cerrar.TButton",
+                foreground="black",
+                background="#ecf0f1",
+                font=("Segoe UI", 10, "bold"),
+                padding=5)
 
 def ejecutar_sorteo():
     try:
@@ -227,9 +234,12 @@ main_frame.pack(fill=tk.BOTH, expand=True)
 title_label = tk.Label(
     main_frame,
     text="CS2 Case Simulator",
-    font=("Arial", 18, "bold"),
+    font=("Segoe UI", 20, "bold"),
     bg=BG_COLOR,
-    fg=FG_COLOR
+    fg="#ffffff",                   
+    pady=10,                        
+    padx=20,                     
+    bd=2        
 )
 title_label.pack(pady=(0, 20))
 
@@ -240,9 +250,12 @@ input_frame.pack(fill=tk.X, pady=10)
 tk.Label(
     input_frame,
     text="Puntos disponibles:",
-    font=FONT,
+    font=("Segoe UI", 14, "bold"),
     bg=BG_COLOR,
-    fg=FG_COLOR
+    fg="#ecf0f1",                   
+    pady=5,
+    padx=10,              
+    bd=2
 ).pack(side=tk.LEFT)
 
 entry_puntos = ttk.Entry(input_frame, font=FONT, width=10)
@@ -251,19 +264,26 @@ entry_puntos.pack(side=tk.LEFT, padx=10)
 # Frame de botones
 button_frame = tk.Frame(main_frame, bg=BG_COLOR)
 button_frame.pack(pady=15)
+style = ttk.Style()
+style.configure(
+    "BlackText.TButton",
+    foreground="black",       # Texto negro
+    font=("Segoe UI", 12, "bold"),  # Fuente moderna
+    padding=6
+)
 
 ttk.Button(
     button_frame,
     text="Realizar Sorteo",
     command=ejecutar_sorteo,
-    style="TButton"
+    style="BlackText.TButton"
 ).pack(side=tk.LEFT, padx=5)
 
 ttk.Button(
     button_frame,
     text="Ver Historial",
     command=mostrar_historial,
-    style="TButton"
+    style="BlackText.TButton"
 ).pack(side=tk.LEFT, padx=5)
 
 # Frame de resultados
@@ -276,7 +296,7 @@ resultado_extra = tk.StringVar()
 label_caja = tk.Label(
     result_frame,
     textvariable=resultado_caja,
-    font=("Arial", 12, "bold"),
+    font=("Times New Roman", 12, "bold"),
     bg=BG_COLOR,
     fg="#f39c12",
     wraplength=400
@@ -286,7 +306,7 @@ label_caja.pack()
 label_extra = tk.Label(
     result_frame,
     textvariable=resultado_extra,
-    font=("Arial", 12, "bold"),
+    font=("Times New Roman", 12, "bold"),
     bg=BG_COLOR,
     wraplength=400
 )
@@ -295,20 +315,20 @@ label_extra.pack(pady=5)
 # Imagen de la caja
 label_imagen = tk.Label(
     main_frame,
-    bg=BG_COLOR,
-    fg=FG_COLOR,
-    text="Esperando sorteo...",
-    font=FONT
+    bg="#2c3e50",           
+    fg="#ecf0f1",
+    text="Esperando sorteo...🎲",
+    font=("Segoe UI", 12, "italic")
 )
 label_imagen.pack(pady=20)
 
 # Footer
 footer_label = tk.Label(
     main_frame,
-    text="Holaaaaa",
-    font=("Arial", 8),
+    text="Da clic en 'Abrir caja' para probar tu suerte ✨",
+    font=("Segoe UI", 10, "italic"),
     bg=BG_COLOR,
-    fg="#7f8c8d"
+    fg="#ecf0f1"
 )
 footer_label.pack(side=tk.BOTTOM, pady=(20, 0))
 
